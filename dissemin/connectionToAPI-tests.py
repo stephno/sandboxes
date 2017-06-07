@@ -89,8 +89,8 @@ def createProject(aTitle, aCategory, aDescription):
         f.write(json.dumps(structure, sort_keys=True, indent=3))
 
 
-# Collect a Paper data form Dissemin
-def getDisseminPapers(paperDOI):
+# Collect a Paper data from Dissemin
+def getDisseminPaper(paperDOI):
     url = "http://dissem.in/api/" + paperDOI
     paperData = json.loads(json.dumps(requests.get(url).json()))
     paperLvl = paperData['paper']
