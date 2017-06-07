@@ -88,9 +88,49 @@ def createProject(aTitle, aCategory, aDescription):
     with open('newProject.json', 'w') as f:
         f.write(json.dumps(structure, sort_keys=True, indent=3))
 
+
+# Collect a Paper data form Dissemin
+def getDisseminPapers(paperDOI):
+    url = "http://dissem.in/api/" + paperDOI
+    paperData = json.loads(json.dumps(requests.get(url).json()))
+    paperLvl = paperData['paper']
+
+    print("|====================================|")
+    print("|    Playing with the Dissemin API   |")
+    print("|====================================|")
+
+    for item in paperLvl:
+        print("- {}: {}".format(item, paperLvl[item]))
+
+
+# Collect required data from a Dissemin paper
+# to further create a Preprints on OSF Preprints
+def preparePaper(paperDOI):
+    url = "http://dissem.in/api/" + paperDOI
+    paperData = json.loads(json.dumps(requests.get(url).json()))
+    paperLvl = paperData['paper']
+    dataDict = {
+        'TITLE:': paperLvl['title'],
+        'AUTHORS:': paperLvl['authors'],
+        'PDF_URL:': paperLvl['pdf_url'],
+        'LICENSE:': 'TO BE FOUND',
+        'DOI:': paperLvl['records'][1]['doi'],
+        'KEYWORDS:': paperLvl['records'][1]['keywords'],
+        'ABSTRACT:': paperLvl['records'][1]['abstract']
+    }
+
+    print("|====================================|")
+    print("|  Preparing data for OSF Preprints  |")
+    print("|====================================|")
+    for key in dataDict:
+        print(key, dataDict[key])
+
 # extractDirectlyFromAPI()
 # createProject(
- #   'My Super Title', 'My Great Category', 'Here is a useful description.')
+#    'My Super Title', 'My Great Category', 'Here is a useful description.')
 
-projectID = raw_input("Enter Project ID: ")
-getProjectData(projectID)
+# projectID = raw_input("Enter Project ID: ")
+# getProjectData(projectID)
+
+paperDOI = raw_input("Enter Paper DOI: ")
+preparePaper(paperDOI)
