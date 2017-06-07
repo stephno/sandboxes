@@ -24,12 +24,21 @@ def createProjectData():
 
 # Get a project
 def getProjectData(projectID):
-    fileName = "project-" + projectID + "-data.json"
+    # fileName = "project-" + projectID + "-data.json"
     url = "https://api.osf.io/v2/nodes/" + projectID
+    projectData = json.loads(json.dumps(requests.get(url).json()))
+    attsLvl = projectData['data']['attributes']
 
-    with open(fileName, 'w') as f:
-        projectData = requests.get(url).json()
-        f.write(json.dumps(projectData, indent=3))
+    print("|====================================|")
+    print("| Playing with the OSF Preprints API |")
+    print("|====================================|")
+
+    for item in attsLvl:
+        print("- {}: {}".format(item, attsLvl[item]))
+
+    # with open(fileName, 'w') as f:
+    #     projectData = requests.get(url).json()
+    #     f.write(json.dumps(projectData, indent=3))
 
 
 # Extract some specific data
