@@ -8,17 +8,27 @@ import requests
 # // metadata from the OSF Preprints API.
 
 
-# Get some user data
+# Get some user data (rough draft)
 def createUsrData():
     with open('user-bvmce.json', 'w') as f:
         usrData = requests.get('https://api.osf.io/v2/users/bvmce').json()
         f.write(json.dumps(usrData, indent=3))
 
 
-# Get a project of this last user
+# Get a project of this last user (rough draft)
 def createProjectData():
     with open('data-bvmce-nfd5c.json', 'w') as f:
         projectData = requests.get('https://api.osf.io/v2/nodes/nfd5c').json()
+        f.write(json.dumps(projectData, indent=3))
+
+
+# Get a project
+def getProjectData(projectID):
+    fileName = "project-" + projectID + "-data.json"
+    url = "https://api.osf.io/v2/nodes/" + projectID
+
+    with open(fileName, 'w') as f:
+        projectData = requests.get(url).json()
         f.write(json.dumps(projectData, indent=3))
 
 
@@ -70,5 +80,8 @@ def createProject(aTitle, aCategory, aDescription):
         f.write(json.dumps(structure, sort_keys=True, indent=3))
 
 # extractDirectlyFromAPI()
-createProject(
-    'My Super Title', 'My Great Category', 'Here is a useful description.')
+# createProject(
+ #   'My Super Title', 'My Great Category', 'Here is a useful description.')
+
+projectID = raw_input("Enter Project ID: ")
+getProjectData(projectID)
