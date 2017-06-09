@@ -40,8 +40,8 @@ def get_metadeta_from_dissemin(paperDOI):
 
         structure = {
                 "attributes": {
-                    "family_name": last,
-                    "given_name": first
+                    "family_name": last_name,
+                    "given_name": first_name
                 }
             }
         return structure
