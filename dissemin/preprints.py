@@ -9,76 +9,58 @@ import requests
 # // for future preprints upload tests.
 
 
-# Collect required data from a Dissemin paper
-# to further create a preprint on OSF Preprints
-def get_metadeta_from_dissemin(paperDOI):
-    url = "http://dissem.in/api/" + paperDOI
-    paperData = json.loads(json.dumps(requests.get(url).json()))
-    paper = paperData['paper']
-    pTitle = paper['title']
-    pRecords = paper['records']
-    pAuthors = paper['authors']
+# Get a dictionary containing the first
+# and last names of the authors of a Dissemin paper,
+# ready to be implemented in an OSF Preprints data dict.
+def translate_authors(dissemin_authors):
+    first_name = dissemin_authors['name']['first']
+    last_name = dissemin_authors['name']['last']
 
-    # Look for a given key through a nested list
-    def get_item(level, key):
+    structure = {
+        "attributes": {
+            "family_name": last_name,
+            "given_name": first_name
+        }
+    }
+    return structure
+
+
+# Collect required data from a Dissemin paper
+# to further create a preprint on OSF Preprints.
+def get_metadeta_from_dissemin(paper_doi):
+    url = "http://dissem.in/api/" + paper_doi
+    paper_data = json.loads(json.dumps(requests.get(url).json()))
+    paper = paper_data['paper']
+    p_title = paper['title']
+    p_records = paper['records']
+    p_authors = paper['authors']
+
+    # Look for a given key through a nested list.
+    def get_item(entry, key):
         count = 0
-        for item in paper[level]:
+        for item in paper[entry]:
             if key in item:
                 return count
             else:
                 count += 1
 
-    def translate_author(dissemin_author):
-        # dissemin_author = {
-        #     "name": {
-        #         "first": "Alfred",
-        #         "last": "Dupont"
-        #     }
-        # }
-        first_name = dissemin_author['name']['first']
-        last_name = dissemin_author['name']['last']
-
-        structure = {
-                "attributes": {
-                    "family_name": last_name,
-                    "given_name": first_name
-                }
-            }
-        return structure
-
-    # Create authors dictionary
-    def create_authors_dict(level):
-        count = 0
-        for item in level:
-            last = item[count]['name']['last']
-            first = item[count]['name']['first']
-            structure = {
-                "attributes": {
-                    "family_name": last,
-                    "given_name": first
-                }
-            }
-            return structure
-            count += 1
-
-
-    dataDict = {
+    data_dict = {
         "license": "TODO",
-        "title": pTitle,
+        "title": p_title,
         "category": "TODO",
-        "description": pRecords[get_item("records", "abstract")]['abstract'],
-        "doi": paperDOI,
-        "contributors": [translate_author(pAuthors) for author in pAuthors],
-        'tags': pRecords[get_item("records", "keywords")]['keywords']
+        "description": p_records[get_item("records", "abstract")]['abstract'],
+        "doi": paper_doi,
+        "contributors": [translate_authors(author) for author in p_authors],
+        'tags': p_records[get_item("records", "keywords")]['keywords']
     }
 
     print("|====================================|")
     print("|  Preparing data for OSF Preprints  |")
     print("|====================================|")
 
-    for key in dataDict:
-        print(key, dataDict[key])
+    for key in data_dict:
+        print(key, data_dict[key])
 
 
-paperDOI = raw_input("Enter Paper DOI: ")
-get_metadeta_from_dissemin(paperDOI)
+paper_doi = raw_input("Enter Paper DOI: ")
+get_metadeta_from_dissemin(paper_doi)
