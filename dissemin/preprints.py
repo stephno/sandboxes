@@ -6,11 +6,11 @@ import requests
 
 # // Some tests meant to get and organize
 # // preprints data. This should lay the groundwork
-# // for future preprints upload tests.
+# // for future upload tests.
 
 
-# Get a dictionary containing the first
-# and last names of the authors of a Dissemin paper,
+# Get a dictionary containing the first and last names
+# of the authors of a Dissemin paper,
 # ready to be implemented in an OSF Preprints data dict.
 def translate_authors(dissemin_authors):
     first_name = dissemin_authors['name']['first']
