@@ -63,8 +63,6 @@ def get_metadeta_from_dissemin(paper_doi):
     }
 
     return min_node_structure
-    # with open('FIRST-DRAFT.json', 'w') as f:
-    #     f.write(json.dumps(min_node_structure, indent=3))
 
 paper_doi = raw_input("Enter Paper DOI: ")
 min_node_structure = get_metadeta_from_dissemin(paper_doi)
