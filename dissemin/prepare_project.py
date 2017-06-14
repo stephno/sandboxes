@@ -46,12 +46,9 @@ def get_metadeta_from_dissemin(paper_doi):
 
     # Look for an abstract
     def get_abstract(key):
-        abstract_list = [subVal[key] for subVal in p_records
-                         if key in subVal]
-
-        for item in abstract_list:
-            if item:
-                return item
+        for item in p_records:
+            if item.get(key):
+                return item[key]
 
         return None
 
