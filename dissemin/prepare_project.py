@@ -44,7 +44,24 @@ def get_metadeta_from_dissemin(paper_doi):
             else:
                 count += 1
 
-    p_abstract = p_records[get_item("records", "abstract")]['abstract']
+    # Look for an abstract
+    def get_abstract(key):
+        mk_abstract_list = lambda key, records: [subVal[key]
+                                                 for subVal in records
+                                                 if key in subVal]
+        abstract_list = mk_abstract_list(key, p_records)
+
+        abstract = ""
+        for item in abstract_list:
+            if item != "":
+                abstract = item
+            else:
+                abstract = "None"
+
+        return abstract
+
+    #p_abstract = p_records[get_item("records", "abstract")]['abstract']
+    p_abstract = get_abstract('abstract')
     p_contrib = [translate_authors(author) for author in p_authors]
     p_tags = p_records[get_item("records", "keywords")]['keywords']
 
@@ -56,8 +73,8 @@ def get_metadeta_from_dissemin(paper_doi):
             "attributes": {
                 "title": p_title,
                 "category": "project",
-                "description": p_abstract,
-                "tags": p_tags.replace('-', '').split(),
+                "description": p_abstract
+                # "tags": p_tags.replace('-', '').split(),
             }
         }
     }
