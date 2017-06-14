@@ -49,16 +49,12 @@ def get_metadeta_from_dissemin(paper_doi):
         abstract_list = [subVal[key] for subVal in p_records
                          if key in subVal]
 
-        abstract = ""
         for item in abstract_list:
             if item:
                 return item
-            else:
-                abstract = None
 
-        return abstract
+        return None
 
-    #p_abstract = p_records[get_item("records", "abstract")]['abstract']
     p_abstract = get_abstract('abstract')
     p_contrib = [translate_authors(author) for author in p_authors]
     p_tags = p_records[get_item("records", "keywords")]['keywords']
