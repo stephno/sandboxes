@@ -51,10 +51,10 @@ def get_metadeta_from_dissemin(paper_doi):
 
         abstract = ""
         for item in abstract_list:
-            if item != "":
-                abstract = item
+            if item:
+                return item
             else:
-                abstract = "None"
+                abstract = None
 
         return abstract
 
