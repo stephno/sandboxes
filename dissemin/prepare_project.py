@@ -45,16 +45,16 @@ def get_metadeta_from_dissemin(paper_doi):
                 count += 1
 
     # Look for an abstract
-    def get_abstract(key):
+    def get_key_data(key):
         for item in p_records:
             if item.get(key):
                 return item[key]
 
         return None
 
-    p_abstract = get_abstract('abstract')
+    p_abstract = get_key_data('abstract')
     p_contrib = [translate_authors(author) for author in p_authors]
-    p_tags = p_records[get_item("records", "keywords")]['keywords']
+    p_tags = get_key_data('keywords')
 
 # Required to create a new node.
 # The project will then host the preprint.
