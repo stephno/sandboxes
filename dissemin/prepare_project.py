@@ -20,8 +20,7 @@ def translate_authors(dissemin_authors):
         "data": {
             "type": "contributors",
             "attributes": {
-                "full_name": "{} {}".format(first_name, last_name),
-                "unregistered_contributor": "{} {}".format(first_name, last_name)
+                "full_name": "{} {}".format(first_name, last_name)
             }
         }
     }
@@ -38,14 +37,6 @@ def get_metadeta_from_dissemin(paper_doi):
     p_records = paper['records']
     p_authors = paper['authors']
 
-    # Look for a given key through a nested list.
-    def get_item(entry, key):
-        count = 0
-        for item in paper[entry]:
-            if key in item and item[key] != "":
-                return count
-            else:
-                count += 1
 
     # Look for an abstract
     def get_key_data(key):
@@ -56,8 +47,6 @@ def get_metadeta_from_dissemin(paper_doi):
         return None
 
     p_abstract = get_key_data('abstract')
-    # p_contrib = [translate_authors(author) for author in p_authors]
-    # p_contrib = translate_authors()
     p_tags = get_key_data('keywords')
 
 # Required to create a new node.
@@ -150,28 +139,10 @@ def add_contributors():
         contrib_response = requests.post(contrib_url,
                                          data=json.dumps(p_contrib),
                                          headers=headers).json()
-    return "OK FOLKS"
+    return "Contributors added"
 
-def contrib_test():
-    p_contrib = {
-        "data": {
-            "type": "contributors",
-            "attributes": {
-                "full_name": "Tryphon Tournesol",
-                "unregistered_contributor": "Tryphon Tournesol"
-            }
-        }
-    }
 
-    contrib_url = osf_nodes_url + node_id + "/contributors/"
-
-    contrib_response = requests.post(contrib_url,
-                                     data=json.dumps(p_contrib),
-                                     headers=headers).json()
-    return contrib_response
-
-#contrib_struct = add_contributors()
-print(add_contributors())
+add_contributors()
 
 #  ==========================================
 # | STEP 2: PREPAPRE THE PREPRINT STRUCTURE  |
