@@ -17,9 +17,12 @@ def translate_authors(dissemin_authors):
     last_name = dissemin_authors['name']['last']
 
     structure = {
-        "attributes": {
-            "family_name": last_name,
-            "given_name": first_name
+        "data": {
+            "type": "contributors",
+            "attributes": {
+                "full_name": "{} {}".format(first_name, last_name),
+                "unregistered_contributor": "{} {}".format(first_name, last_name)
+            }
         }
     }
     return structure
@@ -53,7 +56,8 @@ def get_metadeta_from_dissemin(paper_doi):
         return None
 
     p_abstract = get_key_data('abstract')
-    p_contrib = [translate_authors(author) for author in p_authors]
+    # p_contrib = [translate_authors(author) for author in p_authors]
+    # p_contrib = translate_authors()
     p_tags = get_key_data('keywords')
 
 # Required to create a new node.
@@ -70,10 +74,10 @@ def get_metadeta_from_dissemin(paper_doi):
         }
     }
 
-    return min_node_structure
+    return min_node_structure, p_authors
 
 paper_doi = raw_input("Enter Paper DOI: ")
-min_node_structure = get_metadeta_from_dissemin(paper_doi)
+min_node_structure, p_authors = get_metadeta_from_dissemin(paper_doi)
 
 #  ==================================================
 # | STEP 2: CREATE THE OSF PROJECT FOR THE PREPRINT  |
@@ -135,6 +139,39 @@ def upload_preprint_pdf():
 primary_file_data = upload_preprint_pdf()
 pf_path = primary_file_data['data']['attributes']['path'][1:]
 print(pf_path)
+
+
+# Add contributors
+def add_contributors():
+    contrib_url = osf_nodes_url + node_id + "/contributors/"
+
+    for author in p_authors:
+        p_contrib = translate_authors(author)
+        contrib_response = requests.post(contrib_url,
+                                         data=json.dumps(p_contrib),
+                                         headers=headers).json()
+    return "OK FOLKS"
+
+def contrib_test():
+    p_contrib = {
+        "data": {
+            "type": "contributors",
+            "attributes": {
+                "full_name": "Tryphon Tournesol",
+                "unregistered_contributor": "Tryphon Tournesol"
+            }
+        }
+    }
+
+    contrib_url = osf_nodes_url + node_id + "/contributors/"
+
+    contrib_response = requests.post(contrib_url,
+                                     data=json.dumps(p_contrib),
+                                     headers=headers).json()
+    return contrib_response
+
+#contrib_struct = add_contributors()
+print(add_contributors())
 
 #  ==========================================
 # | STEP 2: PREPAPRE THE PREPRINT STRUCTURE  |
