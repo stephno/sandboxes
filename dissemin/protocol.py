@@ -33,10 +33,10 @@ from django.utils.translation import ugettext as __
 from django.utils.translation import ugettext_lazy as __
 
 class OSFProtocol(protocol.RepositoryProtocol):
-	"""
-	A protocol to submit using the OSF REST API
-	"""
-	form_class = OSFForm
+    """
+    A protocol to submit using the OSF REST API
+    """
+    form_class = OSFForm
 
     def __init__(self, repository, **kwargs):
         super(OSFProtocol, self).__init__(repository, **kwargs)
@@ -49,18 +49,7 @@ class OSFProtocol(protocol.RepositoryProtocol):
         ###
 
     def createMetadata(self, form):
-        # Abstract
-        abstract = form.cleaned_data[
-            'abstract'] or kill_html(self.paper.abstract)
-
-        # Check that there is an abstract
-        if data['metadata'].get['description', ''] == '':
-            self.log('No abstract found, aborting')
-            raise DepositError(__('No abstract is available for this paper but ' +
-                                  'OSF Preprints requires to attach one. ' +
-                                  'Please use the metadata panel to provide one'))
-
-        description = abstract
+        data = {}
 
         authors = self.paper.authors
         records = self.paper.records
@@ -73,7 +62,19 @@ class OSFProtocol(protocol.RepositoryProtocol):
 
             return None
 
+        # Abstract
+        abstract = form.cleaned_data[
+            'abstract'] or kill_html(self.paper.abstract)
+
+        # Check that there is an abstract
+        if self.paper.records.get['description', ''] == '':
+            self.log('No abstract found, aborting')
+            raise DepositError(__('No abstract is available for this paper but ' +
+                                  'OSF Preprints requires to attach one. ' +
+                                  'Please use the metadata panel to provide one'))
+        descriptpion = abstract
         tags = get_key_data('keywords')
+
 
         # Required to create a new node.
         # The project will then host the preprint.
@@ -93,7 +94,7 @@ class OSFProtocol(protocol.RepositoryProtocol):
 
     # Creating the metadata
     self.log("### Creating the metadata")
-    min_node_structure, authors = createMetadata(form)
+    min_node_structure, authors = self.createMetadata(form)
     self.log(json.dumps(min_node_structure, indent=4)+'')
     self.log(json.dumps(authors, indent=4)+'')
 
@@ -115,7 +116,7 @@ class OSFProtocol(protocol.RepositoryProtocol):
         return structure
 
 
-	def submit_deposit(self, pdf, form, dry_run=False):
+    def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
             raise DepositError(__("No OSF token provided."))
         api_key = self.repository.api_key 
