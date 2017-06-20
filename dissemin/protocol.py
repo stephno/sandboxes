@@ -72,7 +72,7 @@ class OSFProtocol(RepositoryProtocol):
             raise DepositError(__('No abstract is available for this paper but ' +
                                   'OSF Preprints requires to attach one. ' +
                                   'Please use the metadata panel to provide one'))
-        descriptpion = abstract
+
         tags = get_key_data('keywords')
 
 
@@ -84,7 +84,7 @@ class OSFProtocol(RepositoryProtocol):
                 "attributes": {
                     "title": self.paper.title,
                     "category": "project",
-                    "description": description
+                    "description": abstract
                     # "tags": p_tags.replace('-', '').split(),
                 }
             }
