@@ -32,7 +32,7 @@ from deposit.protocol import RepositoryProtocol
 from django.utils.translation import ugettext as __
 from django.utils.translation import ugettext_lazy as __
 
-class OSFProtocol(protocol.RepositoryProtocol):
+class OSFProtocol(RepositoryProtocol):
     """
     A protocol to submit using the OSF REST API
     """
@@ -67,7 +67,7 @@ class OSFProtocol(protocol.RepositoryProtocol):
             'abstract'] or kill_html(self.paper.abstract)
 
         # Check that there is an abstract
-        if self.paper.records.get['description', ''] == '':
+        if abstract:
             self.log('No abstract found, aborting')
             raise DepositError(__('No abstract is available for this paper but ' +
                                   'OSF Preprints requires to attach one. ' +
@@ -92,29 +92,6 @@ class OSFProtocol(protocol.RepositoryProtocol):
 
         return min_node_structure, authors
 
-    # Creating the metadata
-    self.log("### Creating the metadata")
-    min_node_structure, authors = self.createMetadata(form)
-    self.log(json.dumps(min_node_structure, indent=4)+'')
-    self.log(json.dumps(authors, indent=4)+'')
-
-    # Get a dictionary containing the first and last names
-    # of the authors of a Dissemin paper,
-    # ready to be implemented in an OSF Preprints data dict.
-    def translate_authors(dissemin_authors):
-        first_name = dissemin_authors.paper.name.first
-        last_name = dissemin_authors.paper.name.last
-
-        structure = {
-            "data": {
-                "type": "contributors",
-                "attributes": {
-                    "full_name": "{} {}".format(first_name, last_name)
-                }
-            }
-        }
-        return structure
-
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -122,6 +99,29 @@ class OSFProtocol(protocol.RepositoryProtocol):
         api_key = self.repository.api_key 
 
         deposit_result = DepositResult()
+
+        # Creating the metadata
+        self.log("### Creating the metadata")
+        min_node_structure, authors = self.createMetadata(form)
+        self.log(json.dumps(min_node_structure, indent=4)+'')
+        self.log(json.dumps(authors, indent=4)+'')
+
+        # Get a dictionary containing the first and last names
+        # of the authors of a Dissemin paper,
+        # ready to be implemented in an OSF Preprints data dict.
+        def translate_authors(dissemin_authors):
+            first_name = dissemin_authors.paper.name.first
+            last_name = dissemin_authors.paper.name.last
+
+            structure = {
+                "data": {
+                    "type": "contributors",
+                    "attributes": {
+                        "full_name": "{} {}".format(first_name, last_name)
+                    }
+                }
+            }
+            return structure
 
         # Extract the OSF Storage link
         def translate_links(node_links):
@@ -137,13 +137,6 @@ class OSFProtocol(protocol.RepositoryProtocol):
         self.log("### Creating the metadata")
         data = self.createMetadata(form)
         self.log(json.dumps(data, indent=4)+'')
-
-        # Check that there is an abstract
-        if data['metadata'].get['description', ''] == '':
-            self.log('No abstract found, aborting')
-            raise DepositError(__('No abstract is available for this paper but ' +
-                                  'OSF Preprints requires to attach one. ' +
-                                  'Please use the metadata panel to provide one'))
 
         # Creating a new depository
         self.log("### Creating a new depository")
