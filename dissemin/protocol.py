@@ -48,6 +48,17 @@ class OSFProtocol(RepositoryProtocol):
         ### À COMPLÉTER
         ###
 
+    def init_deposit(self, paper, user):
+        """
+        Refuse deposit when the paper is already on OSF
+        """
+        # super(OSFProtocol, self).init_deposit(paper, user)
+        # for r in paper.oairecords:
+        #     domain = extract_domain(r.splash_url)
+        #     if domain.endswith('osf.io'):
+        #         return False
+        return True
+
     def createMetadata(self, form):
         data = {}
 
@@ -72,7 +83,7 @@ class OSFProtocol(RepositoryProtocol):
             raise DepositError(__('No abstract is available for this paper but ' +
                                   'OSF Preprints requires to attach one. ' +
                                   'Please use the metadata panel to provide one'))
-
+        descriptpion = abstract
         tags = get_key_data('keywords')
 
 
@@ -84,7 +95,7 @@ class OSFProtocol(RepositoryProtocol):
                 "attributes": {
                     "title": self.paper.title,
                     "category": "project",
-                    "description": abstract
+                    "description": description
                     # "tags": p_tags.replace('-', '').split(),
                 }
             }
@@ -132,6 +143,11 @@ class OSFProtocol(RepositoryProtocol):
         # self.log("### Checking the access token")
         # r = requests.get(api_url_with_key)
         # self.log_request(r, 200, __('Unable to authenticate to OSF.'))
+
+        # Creating the metadata
+        self.log("### Creating the metadata")
+        data = self.createMetadata(form)
+        self.log(json.dumps(data, indent=4)+'')
 
         # Creating a new depository
         self.log("### Creating a new depository")
@@ -206,3 +222,5 @@ class OSFProtocol(RepositoryProtocol):
         deposition_id = r.json()
 
         return deposit_result
+
+protocol_registry.register(OSFProtocol)
