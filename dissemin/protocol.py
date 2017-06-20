@@ -133,11 +133,6 @@ class OSFProtocol(RepositoryProtocol):
         # r = requests.get(api_url_with_key)
         # self.log_request(r, 200, __('Unable to authenticate to OSF.'))
 
-        # Creating the metadata
-        self.log("### Creating the metadata")
-        data = self.createMetadata(form)
-        self.log(json.dumps(data, indent=4)+'')
-
         # Creating a new depository
         self.log("### Creating a new depository")
         headers = {
