@@ -29,14 +29,17 @@ import requests
 from deposit.protocol import DepositError
 from deposit.protocol import DepositResult
 from deposit.protocol import RepositoryProtocol
+from deposit.registry import protocol_registry
+#from deposit.osf.forms import OSFForm
 from django.utils.translation import ugettext as __
 from django.utils.translation import ugettext_lazy as __
+from papers.utils import kill_html
 
 class OSFProtocol(RepositoryProtocol):
     """
     A protocol to submit using the OSF REST API
     """
-    form_class = OSFForm
+    #form_class = OSFForm
 
     def __init__(self, repository, **kwargs):
         super(OSFProtocol, self).__init__(repository, **kwargs)
@@ -83,7 +86,7 @@ class OSFProtocol(RepositoryProtocol):
             raise DepositError(__('No abstract is available for this paper but ' +
                                   'OSF Preprints requires to attach one. ' +
                                   'Please use the metadata panel to provide one'))
-        descriptpion = abstract
+
         tags = get_key_data('keywords')
 
 
@@ -95,7 +98,7 @@ class OSFProtocol(RepositoryProtocol):
                 "attributes": {
                     "title": self.paper.title,
                     "category": "project",
-                    "description": description
+                    "description": abstract
                     # "tags": p_tags.replace('-', '').split(),
                 }
             }
@@ -107,6 +110,7 @@ class OSFProtocol(RepositoryProtocol):
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
             raise DepositError(__("No OSF token provided."))
+
         api_key = self.repository.api_key 
 
         deposit_result = DepositResult()
@@ -213,7 +217,7 @@ class OSFProtocol(RepositoryProtocol):
 
         # Submitting the metadata
         self.log("### Submitting the metadata")
-        r = requests.
+        # r = requests.
 
 
         r = requests.post(api_url_with_key, data=str("{}"), headers=headers)
