@@ -55,7 +55,7 @@ class OSFProtocol(RepositoryProtocol):
         """
         Refuse deposit when the paper is already on OSF
         """
-        # super(OSFProtocol, self).init_deposit(paper, user)
+        super(OSFProtocol, self).init_deposit(paper, user)
         # for r in paper.oairecords:
         #     domain = extract_domain(r.splash_url)
         #     if domain.endswith('osf.io'):
@@ -64,21 +64,25 @@ class OSFProtocol(RepositoryProtocol):
 
     def createMetadata(self, form):
         data = {}
-
+        self.paper.json()
         authors = self.paper.authors
-        records = self.paper.records
+        records = list(self.paper.oairecords)
 
         # Look for specific subkey
         def get_key_data(key):
+            #for item in records.values():
             for item in records:
-                if item.get(key):
+                #if item.get(key):
+                if item.key:
                     return item[key]
 
             return None
 
         # Abstract
-        abstract = form.cleaned_data[
-            'abstract'] or kill_html(self.paper.abstract)
+        # abstract = form.cleaned_data[
+        #     'abstract'] or kill_html(self.paper.abstract)
+        # abstract = get_key_data('description')
+        abstract = records.description
 
         # Check that there is an abstract
         if abstract:
@@ -87,7 +91,7 @@ class OSFProtocol(RepositoryProtocol):
                                   'OSF Preprints requires to attach one. ' +
                                   'Please use the metadata panel to provide one'))
 
-        tags = get_key_data('keywords')
+        # tags = get_key_data('keywords')
 
 
         # Required to create a new node.
@@ -98,6 +102,7 @@ class OSFProtocol(RepositoryProtocol):
                 "attributes": {
                     "title": self.paper.title,
                     "category": "project",
+                    # "description": self.paper.oairecords.description
                     "description": abstract
                     # "tags": p_tags.replace('-', '').split(),
                 }
