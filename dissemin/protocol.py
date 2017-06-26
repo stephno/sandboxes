@@ -63,17 +63,17 @@ class OSFProtocol(RepositoryProtocol):
         return True
 
     def createMetadata(self, form):
-        data = {}
-        self.paper.json()
-        authors = self.paper.authors
-        records = list(self.paper.oairecords)
+        # data = {}
+        paper = self.paper.json()
+        authors = paper['authors']
+        records = paper['records']
 
         # Look for specific subkey
         def get_key_data(key):
             #for item in records.values():
             for item in records:
-                #if item.get(key):
-                if item.key:
+                if item.get(key):
+                # if item.key:
                     return item[key]
 
             return None
@@ -81,8 +81,8 @@ class OSFProtocol(RepositoryProtocol):
         # Abstract
         # abstract = form.cleaned_data[
         #     'abstract'] or kill_html(self.paper.abstract)
-        # abstract = get_key_data('description')
-        abstract = records.description
+        abstract = get_key_data('abstract')
+        # abstract = records.description
 
         # Check that there is an abstract
         if abstract:
@@ -100,10 +100,10 @@ class OSFProtocol(RepositoryProtocol):
             "data": {
                 "type": "nodes",
                 "attributes": {
-                    "title": self.paper.title,
+                    "title": paper['title'],
                     "category": "project",
                     # "description": self.paper.oairecords.description
-                    "description": abstract
+                    "description": "This text is a simple description to fill this field."
                     # "tags": p_tags.replace('-', '').split(),
                 }
             }
@@ -130,8 +130,10 @@ class OSFProtocol(RepositoryProtocol):
         # of the authors of a Dissemin paper,
         # ready to be implemented in an OSF Preprints data dict.
         def translate_authors(dissemin_authors):
-            first_name = dissemin_authors.paper.name.first
-            last_name = dissemin_authors.paper.name.last
+            # first_name = dissemin_authors.paper.name.first
+            # last_name = dissemin_authors.paper.name.last
+            first_name = dissemin_authors['name']['first']
+            last_name = dissemin_authors['name']['last']
 
             structure = {
                 "data": {
@@ -145,7 +147,7 @@ class OSFProtocol(RepositoryProtocol):
 
         # Extract the OSF Storage link
         def translate_links(node_links):
-            upload_link = api_url['links']['upload']
+            upload_link = node_links['links']['upload']
             return upload_link
 
         # Checking the access token
@@ -154,9 +156,9 @@ class OSFProtocol(RepositoryProtocol):
         # self.log_request(r, 200, __('Unable to authenticate to OSF.'))
 
         # Creating the metadata
-        self.log("### Creating the metadata")
-        data = self.createMetadata(form)
-        self.log(json.dumps(data, indent=4)+'')
+        # self.log("### Creating the metadata")
+        # data = self.createMetadata(form)
+        # self.log(json.dumps(data, indent=4)+'')
 
         # Creating a new depository
         self.log("### Creating a new depository")
@@ -169,11 +171,12 @@ class OSFProtocol(RepositoryProtocol):
         # The response should contain the node ID.
         def create_node():
             osf_response = requests.post(self.api_url,
-                                         data=min_node_structure,
-                                         headers=headers)
+                                         data=json.dumps(min_node_structure),
+                                         headers=headers).json()
             return osf_response
 
         osf_response = create_node()
+        # self.log(osf_response)
         node_id = osf_response['data']['id']
 
         # Get OSF Storage link
@@ -194,19 +197,19 @@ class OSFProtocol(RepositoryProtocol):
         self.log("### Uploading the PDF")
         upload_url_suffix = "?kind=file&name=article.pdf"
         upload_url = osf_upload_link + upload_url_suffix
-        data = pdf
+        data = open(pdf, 'r')
         primary_file_data = requests.put(upload_url,
                                          data=data,
                                          headers=headers).json()
         pf_path = primary_file_data['data']['attributes']['path'][1:]
 
-        self.log_request(r, 201, __(
-            'Unable to transfer the document to OSF.'))
+        # self.log_request(primary_file_data, 201, __(
+        #    'Unable to transfer the document to OSF.'))
 
         # Creating the metadata
-        self.log("### Creating the metadata")
-        data = self.createMetadata(form)
-        self.log(json.dumps(data, indent=4)+'')
+        ## self.log("### Creating the metadata")
+        ## data = self.createMetadata(form)
+        ## self.log(json.dumps(data, indent=4)+'')
 
         # Add contributors
         def add_contributors():
@@ -225,10 +228,10 @@ class OSFProtocol(RepositoryProtocol):
         # r = requests.
 
 
-        r = requests.post(api_url_with_key, data=str("{}"), headers=headers)
-        self.log_request(r, 201,__(
-            'Unable to create a new deposition on OSF Preprints.'))
-        deposition_id = r.json()
+        # r = requests.post(api_url_with_key, data=str("{}"), headers=headers)
+        # self.log_request(r, 201,__(
+        #    'Unable to create a new deposition on OSF Preprints.'))
+        # deposition_id = r.json()
 
         return deposit_result
 
