@@ -56,9 +56,8 @@ class OSFProtocol(RepositoryProtocol):
 
     def get_form_initial_data(self):
         data = super(OSFProtocol, self).get_form_initial_data()
-        license_id = data['license']
 
-        return license_id
+        return data
 
     def createMetadata(self, form):
         paper = self.paper.json()
