@@ -106,6 +106,7 @@ class OSFProtocol(RepositoryProtocol):
             raise DepositError(__("No OSF token provided."))
 
         api_key = self.repository.api_key 
+        license_id = form.clean_data['license']
 
         deposit_result = DepositResult()
 
