@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# -*- encoding: utf-8 -*-
-
 # Dissemin: open access policy enforcement tool
 # Copyright (C) 2014 Antonin Delpeuch
 #
@@ -35,6 +33,7 @@ from django.utils.translation import ugettext as __
 from django.utils.translation import ugettext_lazy as __
 from papers.utils import kill_html
 
+
 class OSFProtocol(RepositoryProtocol):
     """
     A protocol to submit using the OSF REST API
@@ -61,7 +60,6 @@ class OSFProtocol(RepositoryProtocol):
 
         return license_id
 
-
     def createMetadata(self, form):
         paper = self.paper.json()
         authors = paper['authors']
@@ -76,6 +74,7 @@ class OSFProtocol(RepositoryProtocol):
             return None
 
         abstract = get_key_data('abstract')
+        paper_doi = get_key_data('doi')
 
         # Check that there is an abstract
         if abstract:
@@ -85,7 +84,6 @@ class OSFProtocol(RepositoryProtocol):
                                   'Please use the metadata panel to provide one'))
 
         # tags = get_key_data('keywords')
-
 
         # Required to create a new node.
         # The project will then host the preprint.
@@ -102,8 +100,7 @@ class OSFProtocol(RepositoryProtocol):
             }
         }
 
-        return min_node_structure, authors
-
+        return min_node_structure, authors, paper_doi
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -115,7 +112,7 @@ class OSFProtocol(RepositoryProtocol):
 
         # Creating the metadata
         self.log("### Creating the metadata")
-        min_node_structure, authors = self.createMetadata(form)
+        min_node_structure, authors, paper_doi = self.createMetadata(form)
         self.log(json.dumps(min_node_structure, indent=4)+'')
         self.log(json.dumps(authors, indent=4)+'')
 
@@ -172,7 +169,6 @@ class OSFProtocol(RepositoryProtocol):
         osf_upload_link = str(list({translate_links(entry) for entry in osf_links}))
         osf_upload_link = osf_upload_link.replace("[u'", '').replace("']", '')
 
-
         # Uploading the PDF
         self.log("### Uploading the PDF")
         upload_url_suffix = "?kind=file&name=article.pdf"
@@ -199,7 +195,8 @@ class OSFProtocol(RepositoryProtocol):
         self.log("### Submitting the metadata")
 
         def create_preprint():
-
+            license_url = "https://api.osf.io/v2/licenses/"
+            license_url = license_url + "{}".format(license_id)
             min_preprint_structure = {
                 "data": {
                     "attributes": {
@@ -221,7 +218,7 @@ class OSFProtocol(RepositoryProtocol):
                         "license": {
                             "links": {
                                 "related": {
-                                    "href": "https://api.osf.io/v2/licenses/{}".format(license_id),
+                                    "href": license_url,
                                     "meta": {}
                                 }
                             }
