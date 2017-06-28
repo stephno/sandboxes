@@ -39,3 +39,7 @@ class OSFForm(FormWithAbstract):
         choices=OSF_LICENSES_CHOICES,
         initial='563c1cf88c5e4a3877f9e965',
         widget=forms.RadioSelect(attrs={'class': 'radio-margin'}))
+
+    abstract = forms.CharField(
+        min_length=20,
+        widget=forms.Textarea)
