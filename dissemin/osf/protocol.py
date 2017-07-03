@@ -188,7 +188,7 @@ class OSFProtocol(RepositoryProtocol):
         add_contributors()
 
         def create_license():
-            node_url = self.api_url + node_id
+            node_url = self.api_url + node_id + "/"
             license_url = "https://api.osf.io/v2/licenses/"
             license_url = license_url + "{}".format(license_id) + "/"
 
@@ -210,10 +210,12 @@ class OSFProtocol(RepositoryProtocol):
                     "type": "nodes",
                     "id": node_id,
                     "attributes": {
-                        # "node_license": {
-                        #     "year": "",
-                        #     "copyright_holders": ""
-                        # }
+                        "node_license": {
+                            # "year": "",
+                            # "copyright_holders": [
+                            #     ""
+                            # ]
+                        }
                     },
                     "relationships": {
                         "license": {
@@ -227,7 +229,7 @@ class OSFProtocol(RepositoryProtocol):
             }
 
             license_req = requests.patch(node_url,
-                                         data=license_structure,
+                                         data=json.dumps(license_structure),
                                          headers=headers)
             license_response = license_req.json()
 
