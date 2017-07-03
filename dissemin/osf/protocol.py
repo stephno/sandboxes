@@ -30,7 +30,7 @@ from deposit.protocol import RepositoryProtocol
 from deposit.registry import protocol_registry
 from deposit.osf.forms import OSFForm
 from django.utils.translation import ugettext as __
-from django.utils.translation import ugettext_lazy as __
+# from django.utils.translation import ugettext_lazy as __
 from papers.utils import kill_html
 
 
@@ -57,6 +57,9 @@ class OSFProtocol(RepositoryProtocol):
     def get_form_initial_data(self):
         data = super(OSFProtocol, self).get_form_initial_data()
 
+        if self.paper.abstract:
+            data['abstract'] = kill_html(self.paper.abstract)
+
         return data
 
     def createMetadata(self, form):
@@ -72,17 +75,10 @@ class OSFProtocol(RepositoryProtocol):
 
             return None
 
-        abstract = get_key_data('abstract')
+        # abstract = get_key_data('abstract')
+        abstract = form.cleaned_data[
+            'abstract'] or kill_html(self.paper.abstract)
         paper_doi = get_key_data('doi')
-
-        # Check that there is an abstract
-        if abstract:
-            self.log('No abstract found, aborting')
-            raise DepositError(__('No abstract is available for this paper but ' +
-                                  'OSF Preprints requires to attach one. ' +
-                                  'Please use the metadata panel to provide one'))
-
-        # tags = get_key_data('keywords')
 
         # Required to create a new node.
         # The project will then host the preprint.
@@ -93,7 +89,6 @@ class OSFProtocol(RepositoryProtocol):
                     "title": paper['title'],
                     "category": "project",
                     "description": abstract
-                    # "description": "This text is a simple description to fill this field."
                     # "tags": p_tags.replace('-', '').split(),
                 }
             }
@@ -105,8 +100,8 @@ class OSFProtocol(RepositoryProtocol):
         if self.repository.api_key is None:
             raise DepositError(__("No OSF token provided."))
 
-        api_key = self.repository.api_key 
-        license_id = form.clean_data['license']
+        api_key = self.repository.api_key
+        license_id = form.cleaned_data['license']
 
         deposit_result = DepositResult()
 
@@ -132,6 +127,7 @@ class OSFProtocol(RepositoryProtocol):
                 }
             }
             return structure
+
 
         # Extract the OSF Storage link
         def translate_links(node_links):
@@ -166,7 +162,8 @@ class OSFProtocol(RepositoryProtocol):
 
         self.osf_storage_data = get_newnode_osf_storage(node_id)
         osf_links = self.osf_storage_data['data']
-        osf_upload_link = str(list({translate_links(entry) for entry in osf_links}))
+        osf_upload_link = str(
+            list({translate_links(entry) for entry in osf_links}))
         osf_upload_link = osf_upload_link.replace("[u'", '').replace("']", '')
 
         # Uploading the PDF
@@ -190,6 +187,51 @@ class OSFProtocol(RepositoryProtocol):
                                                  headers=headers).json()
 
         add_contributors()
+
+        def create_license():
+            node_url = self.api_url + node_id
+            license_url = "https://api.osf.io/v2/licenses/"
+            license_url = license_url + "{}".format(license_id) +"/"
+
+            # structure = {
+            #     "data": {
+            #         "type": "nodes",
+            #         "id": 
+            #         "links": {
+            #             "related": {
+            #                 "href": license_url,
+            #                 "meta": {}
+            #             }
+            #         }
+            #     }
+            # }
+
+            structure = {
+                "data": {
+                    "type": "nodes",
+                    "id": node_id,
+                    "attributes": {
+                        # "node_license": {
+                        #     "year": "",
+                        #     "copyright_holders": ""
+                        # }
+                    },
+                    "relationships": {
+                        "license": {
+                            "data": {
+                                "type": "licenses",
+                                "id": license_id
+                            }
+                        }
+                    }
+                }
+            }
+            
+            license_struct = requests.patch(node_url,
+                                          data=structure,
+                                          headers=headers).json()
+
+        create_license()
 
         # Submitting the metadata
         self.log("### Submitting the metadata")
