@@ -128,7 +128,6 @@ class OSFProtocol(RepositoryProtocol):
             }
             return structure
 
-
         # Extract the OSF Storage link
         def translate_links(node_links):
             upload_link = node_links['links']['upload']
@@ -191,12 +190,12 @@ class OSFProtocol(RepositoryProtocol):
         def create_license():
             node_url = self.api_url + node_id
             license_url = "https://api.osf.io/v2/licenses/"
-            license_url = license_url + "{}".format(license_id) +"/"
+            license_url = license_url + "{}".format(license_id) + "/"
 
             # structure = {
             #     "data": {
             #         "type": "nodes",
-            #         "id": 
+            #         "id":
             #         "links": {
             #             "related": {
             #                 "href": license_url,
@@ -226,14 +225,14 @@ class OSFProtocol(RepositoryProtocol):
                     }
                 }
             }
-            
+
             license_response = requests.patch(node_url,
-                                          data=license_structure,
-                                          headers=headers).json()
+                                              data=license_structure,
+                                              headers=headers).json()
 
             # Updating License
-        self.log("### Updating License")
-        self.log(license_response.status_code)
+            self.log("### Updating License")
+            self.log(license_response.status_code)
 
         create_license()
 
