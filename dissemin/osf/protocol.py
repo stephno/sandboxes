@@ -66,6 +66,8 @@ class OSFProtocol(RepositoryProtocol):
         paper = self.paper.json()
         authors = paper['authors']
         records = paper['records']
+        pub_date = paper['pubdate']
+        # authors_for_license = paper['authors_list']
 
         # Look for specific subkey
         def get_key_data(key):
@@ -94,7 +96,8 @@ class OSFProtocol(RepositoryProtocol):
             }
         }
 
-        return min_node_structure, authors, paper_doi
+        return min_node_structure, authors, \
+               paper_doi, pub_date
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -211,7 +214,8 @@ class OSFProtocol(RepositoryProtocol):
                     "id": node_id,
                     "attributes": {
                         "node_license": {
-                            # "year": "",
+                            "year": pub_date,
+                            "copyright_holders": authors
                             # "copyright_holders": [
                             #     ""
                             # ]
