@@ -206,7 +206,7 @@ class OSFProtocol(RepositoryProtocol):
             #     }
             # }
 
-            structure = {
+            license_structure = {
                 "data": {
                     "type": "nodes",
                     "id": node_id,
@@ -227,14 +227,15 @@ class OSFProtocol(RepositoryProtocol):
                 }
             }
             
-            license_struct = requests.patch(node_url,
-                                          data=structure,
+            license_response = requests.patch(node_url,
+                                          data=license_structure,
                                           headers=headers).json()
 
-        create_license()
+            # Updating License
+        self.log("### Updating License")
+        self.log(license_response.status_code)
 
-        # Submitting the metadata
-        self.log("### Submitting the metadata")
+        create_license()
 
         def create_preprint():
             license_url = "https://api.osf.io/v2/licenses/"
