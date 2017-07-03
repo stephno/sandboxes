@@ -226,13 +226,15 @@ class OSFProtocol(RepositoryProtocol):
                 }
             }
 
-            license_response = requests.patch(node_url,
-                                              data=license_structure,
-                                              headers=headers).json()
+            license_req = requests.patch(node_url,
+                                         data=license_structure,
+                                         headers=headers)
+            license_response = license_req.json()
 
             # Updating License
             self.log("### Updating License")
-            self.log(license_response.status_code)
+            self.log(str(license_req.status_code))
+            self.log(license_req.text)
 
         create_license()
 
