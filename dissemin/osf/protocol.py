@@ -24,8 +24,6 @@ import json
 
 import requests
 
-import re
-
 from deposit.protocol import DepositError
 from deposit.protocol import DepositResult
 from deposit.protocol import RepositoryProtocol
@@ -87,6 +85,7 @@ class OSFProtocol(RepositoryProtocol):
 
         def create_tags():
             tags = list(form.cleaned_data['tags'].split(','))
+            tags = [item for item in tags if item != ""]
             tags = [item.strip() for item in tags]
 
             return tags
