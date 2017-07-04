@@ -91,7 +91,7 @@ class OSFProtocol(RepositoryProtocol):
 
             return tags
 
-        tags = create_tag()
+        tags = create_tags()
 
         # tags_list = list(form.cleaned_data['tags'].split(','))
 
