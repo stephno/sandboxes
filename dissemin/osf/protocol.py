@@ -83,8 +83,17 @@ class OSFProtocol(RepositoryProtocol):
         abstract = form.cleaned_data[
             'abstract'] or kill_html(self.paper.abstract)
         paper_doi = get_key_data('doi')
-        paper_tags = get_key_data('keywords')
-        tags = list(form.cleaned_data['tags'].split(','))
+        # paper_tags = get_key_data('keywords')
+
+        def create_tags():
+            tags = list(form.cleaned_data['tags'].split(','))
+            tags = [item.strip() for item in tags]
+
+            return tags
+
+        tags = create_tag()
+
+        # tags_list = list(form.cleaned_data['tags'].split(','))
 
         # Required to create a new node.
         # The project will then host the preprint.

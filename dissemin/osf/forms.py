@@ -47,5 +47,5 @@ class OSFForm(FormWithAbstract):
         widget=forms.Textarea)
 
     # keywords = RegexValidator(r'\w+\s{0,1}', 'Random Error Message')
-    keywords = RegexValidator(r'(\w+\s{0,1})+', 'Random Error Message')
-    tags = forms.CharField(validators=[keywords])
+    #keywords = RegexValidator(r'(\w+\s{0,1})+', 'Random Error Message')
+    tags = forms.CharField()
