@@ -85,8 +85,8 @@ class OSFProtocol(RepositoryProtocol):
 
         def create_tags():
             tags = list(form.cleaned_data['tags'].split(','))
-            tags = [item for item in tags if item != ""]
             tags = [item.strip() for item in tags]
+            tags = [item for item in tags if item != ""]
 
             return tags
 
