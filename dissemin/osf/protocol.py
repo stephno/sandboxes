@@ -24,6 +24,8 @@ import json
 
 import requests
 
+import re
+
 from deposit.protocol import DepositError
 from deposit.protocol import DepositResult
 from deposit.protocol import RepositoryProtocol
@@ -66,7 +68,7 @@ class OSFProtocol(RepositoryProtocol):
         paper = self.paper.json()
         authors = paper['authors']
         records = paper['records']
-        pub_date = paper['pubdate']
+        # pub_date = paper['pubdate']
         # authors_for_license = paper['authors_list']
 
         # Look for specific subkey
@@ -81,6 +83,10 @@ class OSFProtocol(RepositoryProtocol):
         abstract = form.cleaned_data[
             'abstract'] or kill_html(self.paper.abstract)
         paper_doi = get_key_data('doi')
+        paper_tags = get_key_data('keywords')
+        # reg = r.compile('[\w]')
+        # paper_tags = re.split(r'[\w]', str(paper_tags))
+        tags = paper_tags.replace('-', '').split()
 
         # Required to create a new node.
         # The project will then host the preprint.
@@ -90,14 +96,16 @@ class OSFProtocol(RepositoryProtocol):
                 "attributes": {
                     "title": paper['title'],
                     "category": "project",
-                    "description": abstract
+                    "description": abstract,
                     # "tags": p_tags.replace('-', '').split(),
+                    "tags": tags
                 }
             }
         }
 
-        return min_node_structure, authors, \
-               paper_doi, pub_date
+        # return min_node_structure, authors, \
+        #       paper_doi, pub_date
+        return min_node_structure, authors, paper_doi
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -214,8 +222,8 @@ class OSFProtocol(RepositoryProtocol):
                     "id": node_id,
                     "attributes": {
                         "node_license": {
-                            "year": pub_date,
-                            "copyright_holders": authors
+                            # "year": pub_date,
+                            # "copyright_holders": authors
                             # "copyright_holders": [
                             #     ""
                             # ]
