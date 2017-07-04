@@ -22,6 +22,8 @@ from __future__ import unicode_literals
 
 from deposit.forms import FormWithAbstract
 from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils.translation import ugettext as __
 
 OSF_LICENSES_CHOICES = [
@@ -43,3 +45,7 @@ class OSFForm(FormWithAbstract):
     abstract = forms.CharField(
         min_length=20,
         widget=forms.Textarea)
+
+    # keywords = RegexValidator(r'\w+\s{0,1}', 'Random Error Message')
+    keywords = RegexValidator(r'(\w+\s{0,1})+', 'Random Error Message')
+    tags = forms.CharField(validators=[keywords])
