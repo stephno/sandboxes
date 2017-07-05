@@ -124,7 +124,9 @@ class OSFProtocol(RepositoryProtocol):
         # Get a dictionary containing the first and last names
         # of the authors of a Dissemin paper,
         # ready to be implemented in an OSF Preprints data dict.
-        def translate_authors(dissemin_authors, goal="optional"):
+        def translate_author(dissemin_authors, goal="optional"):
+            # first_name = dissemin_authors['name']['first']
+            # last_name = dissemin_authors['name']['last']
             author = "{} {}".format(dissemin_authors['name']['first'],
                                     dissemin_authors['name']['last'])
 
@@ -195,7 +197,7 @@ class OSFProtocol(RepositoryProtocol):
             contrib_url = self.api_url + node_id + "/contributors/"
 
             for author in authors:
-                contrib = translate_authors(author, "contrib")
+                contrib = translate_author(author, "contrib")
                 contrib_response = requests.post(contrib_url,
                                                  data=json.dumps(contrib),
                                                  headers=headers).json()
@@ -206,7 +208,7 @@ class OSFProtocol(RepositoryProtocol):
             node_url = self.api_url + node_id + "/"
             license_url = "https://api.osf.io/v2/licenses/"
             license_url = license_url + "{}".format(license_id) + "/"
-            authors_list = [translate_authors(author)
+            authors_list = [translate_author(author)
                             for author in authors]
 
             license_structure = {
@@ -236,7 +238,46 @@ class OSFProtocol(RepositoryProtocol):
                 license_structure['data']['attributes'] = {
                     "node_license": {}
                 }
-            
+            # if license_id == "563c1cf88c5e4a3877f9e965":
+            #     license_structure = {
+            #         "data": {
+            #             "type": "nodes",
+            #             "id": node_id,
+            #             "attributes": {
+            #                 "node_license": {
+            #                     "year": pub_date,
+            #                     "copyright_holders": authors_list
+            #                 }
+            #             },
+            #             "relationships": {
+            #                 "license": {
+            #                     "data": {
+            #                         "type": "licenses",
+            #                         "id": license_id
+            #                     }
+            #                 }
+            #             }
+            #         }
+            #     }
+            # else:
+            #     license_structure = {
+            #         "data": {
+            #             "type": "nodes",
+            #             "id": node_id,
+            #             "attributes": {
+            #                 "node_license": {}
+            #             },
+            #             "relationships": {
+            #                 "license": {
+            #                     "data": {
+            #                         "type": "licenses",
+            #                         "id": license_id
+            #                     }
+            #                 }
+            #             }
+            #         }
+            #     }
+
             license_req = requests.patch(node_url,
                                          data=json.dumps(license_structure),
                                          headers=headers)
