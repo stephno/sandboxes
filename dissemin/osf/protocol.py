@@ -66,8 +66,7 @@ class OSFProtocol(RepositoryProtocol):
         paper = self.paper.json()
         authors = paper['authors']
         records = paper['records']
-        # pub_date = paper['pubdate']
-        # authors_for_license = paper['authors_list']
+        pub_date = paper['date'][:-6]
 
         # Look for specific subkey
         def get_key_data(key):
@@ -77,11 +76,9 @@ class OSFProtocol(RepositoryProtocol):
 
             return None
 
-        # abstract = get_key_data('abstract')
         abstract = form.cleaned_data[
             'abstract'] or kill_html(self.paper.abstract)
         paper_doi = get_key_data('doi')
-        # paper_tags = get_key_data('keywords')
 
         def create_tags():
             tags = list(form.cleaned_data['tags'].split(','))
@@ -92,8 +89,6 @@ class OSFProtocol(RepositoryProtocol):
 
         tags = create_tags()
 
-        # tags_list = list(form.cleaned_data['tags'].split(','))
-
         # Required to create a new node.
         # The project will then host the preprint.
         min_node_structure = {
@@ -103,15 +98,13 @@ class OSFProtocol(RepositoryProtocol):
                     "title": paper['title'],
                     "category": "project",
                     "description": abstract,
-                    # "tags": p_tags.replace('-', '').split(),
                     "tags": tags
                 }
             }
         }
 
-        # return min_node_structure, authors, \
-        #       paper_doi, pub_date
-        return min_node_structure, authors, paper_doi
+        return min_node_structure, authors, \
+              paper_doi, pub_date
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -124,26 +117,32 @@ class OSFProtocol(RepositoryProtocol):
 
         # Creating the metadata
         self.log("### Creating the metadata")
-        min_node_structure, authors, paper_doi = self.createMetadata(form)
+        min_node_structure, authors, paper_doi, pub_date = self.createMetadata(form)
         self.log(json.dumps(min_node_structure, indent=4)+'')
         self.log(json.dumps(authors, indent=4)+'')
 
         # Get a dictionary containing the first and last names
         # of the authors of a Dissemin paper,
         # ready to be implemented in an OSF Preprints data dict.
-        def translate_authors(dissemin_authors):
+        def translate_authors(dissemin_authors, goal="optional"):
             first_name = dissemin_authors['name']['first']
             last_name = dissemin_authors['name']['last']
+            author = "{} {}".format(first_name, last_name)
 
-            structure = {
-                "data": {
-                    "type": "contributors",
-                    "attributes": {
-                        "full_name": "{} {}".format(first_name, last_name)
+            if goal == "contrib":
+                structure = {
+                    "data": {
+                        "type": "contributors",
+                        "attributes": {
+                            "full_name": author
+                        }
                     }
                 }
-            }
-            return structure
+                return structure
+
+            else:
+                return author
+
 
         # Extract the OSF Storage link
         def translate_links(node_links):
@@ -197,7 +196,7 @@ class OSFProtocol(RepositoryProtocol):
             contrib_url = self.api_url + node_id + "/contributors/"
 
             for author in authors:
-                contrib = translate_authors(author)
+                contrib = translate_authors(author, "contrib")
                 contrib_response = requests.post(contrib_url,
                                                  data=json.dumps(contrib),
                                                  headers=headers).json()
@@ -208,43 +207,48 @@ class OSFProtocol(RepositoryProtocol):
             node_url = self.api_url + node_id + "/"
             license_url = "https://api.osf.io/v2/licenses/"
             license_url = license_url + "{}".format(license_id) + "/"
+            authors_list = [translate_authors(author)
+                            for author in authors]
 
-            # structure = {
-            #     "data": {
-            #         "type": "nodes",
-            #         "id":
-            #         "links": {
-            #             "related": {
-            #                 "href": license_url,
-            #                 "meta": {}
-            #             }
-            #         }
-            #     }
-            # }
-
-            license_structure = {
-                "data": {
-                    "type": "nodes",
-                    "id": node_id,
-                    "attributes": {
-                        "node_license": {
-                            # "year": pub_date,
-                            # "copyright_holders": authors
-                            # "copyright_holders": [
-                            #     ""
-                            # ]
-                        }
-                    },
-                    "relationships": {
-                        "license": {
-                            "data": {
-                                "type": "licenses",
-                                "id": license_id
+            if license_id == "563c1cf88c5e4a3877f9e965":
+                license_structure = {
+                    "data": {
+                        "type": "nodes",
+                        "id": node_id,
+                        "attributes": {
+                            "node_license": {
+                                "year": pub_date,
+                                "copyright_holders": authors_list
+                            }
+                        },
+                        "relationships": {
+                            "license": {
+                                "data": {
+                                    "type": "licenses",
+                                    "id": license_id
+                                }
                             }
                         }
                     }
                 }
-            }
+            else:
+                license_structure = {
+                    "data": {
+                        "type": "nodes",
+                        "id": node_id,
+                        "attributes": {
+                            "node_license": {}
+                        },
+                        "relationships": {
+                            "license": {
+                                "data": {
+                                    "type": "licenses",
+                                    "id": license_id
+                                }
+                            }
+                        }
+                    }
+                }
 
             license_req = requests.patch(node_url,
                                          data=json.dumps(license_structure),
