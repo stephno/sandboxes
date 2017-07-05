@@ -125,9 +125,8 @@ class OSFProtocol(RepositoryProtocol):
         # of the authors of a Dissemin paper,
         # ready to be implemented in an OSF Preprints data dict.
         def translate_authors(dissemin_authors, goal="optional"):
-            first_name = dissemin_authors['name']['first']
-            last_name = dissemin_authors['name']['last']
-            author = "{} {}".format(first_name, last_name)
+            author = "{} {}".format(dissemin_authors['name']['first'],
+                                    dissemin_authors['name']['last'])
 
             if goal == "contrib":
                 structure = {
@@ -210,35 +209,11 @@ class OSFProtocol(RepositoryProtocol):
             authors_list = [translate_authors(author)
                             for author in authors]
 
-            if license_id == "563c1cf88c5e4a3877f9e965":
-                license_structure = {
+            license_structure = {
                     "data": {
                         "type": "nodes",
                         "id": node_id,
-                        "attributes": {
-                            "node_license": {
-                                "year": pub_date,
-                                "copyright_holders": authors_list
-                            }
-                        },
-                        "relationships": {
-                            "license": {
-                                "data": {
-                                    "type": "licenses",
-                                    "id": license_id
-                                }
-                            }
-                        }
-                    }
-                }
-            else:
-                license_structure = {
-                    "data": {
-                        "type": "nodes",
-                        "id": node_id,
-                        "attributes": {
-                            "node_license": {}
-                        },
+                        "attributes": {},
                         "relationships": {
                             "license": {
                                 "data": {
@@ -250,6 +225,18 @@ class OSFProtocol(RepositoryProtocol):
                     }
                 }
 
+            if license_id == "563c1cf88c5e4a3877f9e965":
+                license_structure['data']['attributes'] = {
+                    "node_license": {
+                        "year": pub_date,
+                        "copyright_holders": authors_list
+                    }
+                }
+            else:
+                license_structure['data']['attributes'] = {
+                    "node_license": {}
+                }
+            
             license_req = requests.patch(node_url,
                                          data=json.dumps(license_structure),
                                          headers=headers)
