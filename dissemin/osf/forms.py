@@ -48,4 +48,4 @@ class OSFForm(FormWithAbstract):
 
     # keywords = RegexValidator(r'\w+\s{0,1}', 'Random Error Message')
     #keywords = RegexValidator(r'(\w+\s{0,1})+', 'Random Error Message')
-    tags = forms.CharField()
+    tags = forms.CharField( help_text="Separate tags with commas")
