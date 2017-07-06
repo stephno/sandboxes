@@ -126,8 +126,6 @@ class OSFProtocol(RepositoryProtocol):
         # of the authors of a Dissemin paper,
         # ready to be implemented in an OSF Preprints data dict.
         def translate_author(dissemin_authors, goal="optional"):
-            # first_name = dissemin_authors['name']['first']
-            # last_name = dissemin_authors['name']['last']
             author = "{} {}".format(dissemin_authors['name']['first'],
                                     dissemin_authors['name']['last'])
 
@@ -255,7 +253,7 @@ class OSFProtocol(RepositoryProtocol):
             license_req = requests.patch(node_url,
                                          data=json.dumps(license_structure),
                                          headers=headers)
-            self.log_request(license_req, 201,
+            self.log_request(license_req, 200,
                              __('Unable to update license.'))
             license_response = license_req.json()
 
