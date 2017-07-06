@@ -162,9 +162,11 @@ class OSFProtocol(RepositoryProtocol):
         def create_node():
             osf_response = requests.post(self.api_url,
                                          data=json.dumps(min_node_structure),
-                                         headers=headers).json()
+                                         headers=headers)
             self.log_request(osf_response, 201,
                              __('Unable to create a project on OSF.'))
+
+            osf_response = osf_response.json()
             return osf_response
 
         osf_response = create_node()
@@ -175,9 +177,11 @@ class OSFProtocol(RepositoryProtocol):
         def get_newnode_osf_storage(node_id):
             self.storage_url = self.api_url + "{}/files/".format(node_id)
             osf_storage_data = requests.get(self.storage_url,
-                                            headers=headers).json()
+                                            headers=headers)
             self.log_request(osf_storage_data, 200,
                              __('Unable to authenticate to OSF.'))
+
+            osf_storage_data = osf_storage_data.json()
             return osf_storage_data
 
         self.osf_storage_data = get_newnode_osf_storage(node_id)
@@ -193,9 +197,10 @@ class OSFProtocol(RepositoryProtocol):
         data = open(pdf, 'r')
         primary_file_data = requests.put(upload_url,
                                          data=data,
-                                         headers=headers).json()
+                                         headers=headers)
         self.log_request(primary_file_data, 201,
                          __('Unable to upload the PDF file.'))
+        primary_file_data = primary_file_data.json()
         pf_path = primary_file_data['data']['attributes']['path'][1:]
 
         # Add contributors
@@ -206,7 +211,7 @@ class OSFProtocol(RepositoryProtocol):
                 contrib = translate_author(author, "contrib")
                 contrib_response = requests.post(contrib_url,
                                                  data=json.dumps(contrib),
-                                                 headers=headers).json()
+                                                 headers=headers)
                 self.log_request(contrib_response, 201,
                                  __('Unable to add contributors.'))
 
