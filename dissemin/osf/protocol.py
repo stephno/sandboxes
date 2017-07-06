@@ -104,7 +104,7 @@ class OSFProtocol(RepositoryProtocol):
         }
 
         return min_node_structure, authors, \
-              paper_doi, pub_date
+            paper_doi, pub_date
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -117,7 +117,8 @@ class OSFProtocol(RepositoryProtocol):
 
         # Creating the metadata
         self.log("### Creating the metadata")
-        min_node_structure, authors, paper_doi, pub_date = self.createMetadata(form)
+        min_node_structure, authors, \
+            paper_doi, pub_date = self.createMetadata(form)
         self.log(json.dumps(min_node_structure, indent=4)+'')
         self.log(json.dumps(authors, indent=4)+'')
 
@@ -144,7 +145,6 @@ class OSFProtocol(RepositoryProtocol):
             else:
                 return author
 
-
         # Extract the OSF Storage link
         def translate_links(node_links):
             upload_link = node_links['links']['upload']
@@ -163,6 +163,8 @@ class OSFProtocol(RepositoryProtocol):
             osf_response = requests.post(self.api_url,
                                          data=json.dumps(min_node_structure),
                                          headers=headers).json()
+            self.log_request(osf_response, 201,
+                             __('Unable to create a project on OSF.'))
             return osf_response
 
         osf_response = create_node()
@@ -174,6 +176,8 @@ class OSFProtocol(RepositoryProtocol):
             self.storage_url = self.api_url + "{}/files/".format(node_id)
             osf_storage_data = requests.get(self.storage_url,
                                             headers=headers).json()
+            self.log_request(osf_storage_data, 200,
+                             __('Unable to authenticate to OSF.'))
             return osf_storage_data
 
         self.osf_storage_data = get_newnode_osf_storage(node_id)
@@ -190,6 +194,8 @@ class OSFProtocol(RepositoryProtocol):
         primary_file_data = requests.put(upload_url,
                                          data=data,
                                          headers=headers).json()
+        self.log_request(primary_file_data, 201,
+                         __('Unable to upload the PDF file.'))
         pf_path = primary_file_data['data']['attributes']['path'][1:]
 
         # Add contributors
@@ -201,6 +207,8 @@ class OSFProtocol(RepositoryProtocol):
                 contrib_response = requests.post(contrib_url,
                                                  data=json.dumps(contrib),
                                                  headers=headers).json()
+                self.log_request(contrib_response, 201,
+                                 __('Unable to add contributors.'))
 
         add_contributors()
 
@@ -238,49 +246,12 @@ class OSFProtocol(RepositoryProtocol):
                 license_structure['data']['attributes'] = {
                     "node_license": {}
                 }
-            # if license_id == "563c1cf88c5e4a3877f9e965":
-            #     license_structure = {
-            #         "data": {
-            #             "type": "nodes",
-            #             "id": node_id,
-            #             "attributes": {
-            #                 "node_license": {
-            #                     "year": pub_date,
-            #                     "copyright_holders": authors_list
-            #                 }
-            #             },
-            #             "relationships": {
-            #                 "license": {
-            #                     "data": {
-            #                         "type": "licenses",
-            #                         "id": license_id
-            #                     }
-            #                 }
-            #             }
-            #         }
-            #     }
-            # else:
-            #     license_structure = {
-            #         "data": {
-            #             "type": "nodes",
-            #             "id": node_id,
-            #             "attributes": {
-            #                 "node_license": {}
-            #             },
-            #             "relationships": {
-            #                 "license": {
-            #                     "data": {
-            #                         "type": "licenses",
-            #                         "id": license_id
-            #                     }
-            #                 }
-            #             }
-            #         }
-            #     }
 
             license_req = requests.patch(node_url,
                                          data=json.dumps(license_structure),
                                          headers=headers)
+            self.log_request(license_req, 201,
+                             __('Unable to update license.'))
             license_response = license_req.json()
 
             # Updating License
