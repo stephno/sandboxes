@@ -52,7 +52,7 @@ class OSFProtocol(RepositoryProtocol):
         Refuse deposit when the paper is already on OSF
         """
         super(OSFProtocol, self).init_deposit(paper, user)
-        return True
+        return (True)
 
     def get_form_initial_data(self):
         data = super(OSFProtocol, self).get_form_initial_data()
@@ -60,7 +60,7 @@ class OSFProtocol(RepositoryProtocol):
         if self.paper.abstract:
             data['abstract'] = kill_html(self.paper.abstract)
 
-        return data
+        return (data)
 
     def createMetadata(self, form):
         paper = self.paper.json()
@@ -72,12 +72,12 @@ class OSFProtocol(RepositoryProtocol):
         def get_key_data(key):
             for item in records:
                 if item.get(key):
-                    return item[key]
+                    return (item[key])
 
-            return None
+            return (None)
 
-        abstract = form.cleaned_data[
-            'abstract'] or kill_html(self.paper.abstract)
+        abstract = (form.cleaned_data['abstract']
+                    or kill_html(self.paper.abstract))
         paper_doi = get_key_data('doi')
 
         def create_tags():
@@ -85,7 +85,7 @@ class OSFProtocol(RepositoryProtocol):
             tags = [item.strip() for item in tags]
             tags = [item for item in tags if item != ""]
 
-            return tags
+            return (tags)
 
         tags = create_tags()
 
@@ -103,8 +103,8 @@ class OSFProtocol(RepositoryProtocol):
             }
         }
 
-        return min_node_structure, authors, \
-            paper_doi, pub_date
+        return (min_node_structure, authors,
+                paper_doi, pub_date)
 
     def submit_deposit(self, pdf, form, dry_run=False):
         if self.repository.api_key is None:
@@ -117,8 +117,8 @@ class OSFProtocol(RepositoryProtocol):
 
         # Creating the metadata
         self.log("### Creating the metadata")
-        min_node_structure, authors, \
-            paper_doi, pub_date = self.createMetadata(form)
+        min_node_structure, authors, paper_doi, pub_date = (
+            self.createMetadata(form))
         self.log(json.dumps(min_node_structure, indent=4)+'')
         self.log(json.dumps(authors, indent=4)+'')
 
@@ -138,15 +138,15 @@ class OSFProtocol(RepositoryProtocol):
                         }
                     }
                 }
-                return structure
+                return (structure)
 
             else:
-                return author
+                return (author)
 
         # Extract the OSF Storage link
         def translate_links(node_links):
             upload_link = node_links['links']['upload']
-            return upload_link
+            return (upload_link)
 
         # Creating a new depository
         self.log("### Creating a new depository")
@@ -165,7 +165,7 @@ class OSFProtocol(RepositoryProtocol):
                              __('Unable to create a project on OSF.'))
 
             osf_response = osf_response.json()
-            return osf_response
+            return (osf_response)
 
         osf_response = create_node()
         node_id = osf_response['data']['id']
@@ -180,7 +180,7 @@ class OSFProtocol(RepositoryProtocol):
                              __('Unable to authenticate to OSF.'))
 
             osf_storage_data = osf_storage_data.json()
-            return osf_storage_data
+            return (osf_storage_data)
 
         self.osf_storage_data = get_newnode_osf_storage(node_id)
         osf_links = self.osf_storage_data['data']
@@ -303,6 +303,6 @@ class OSFProtocol(RepositoryProtocol):
                 }
             }
 
-        return deposit_result
+        return (deposit_result)
 
 protocol_registry.register(OSFProtocol)
