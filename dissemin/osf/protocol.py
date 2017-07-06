@@ -33,6 +33,8 @@ from django.utils.translation import ugettext as __
 # from django.utils.translation import ugettext_lazy as __
 from papers.utils import kill_html
 
+NO_LICENSE_ID = "563c1cf88c5e4a3877f9e965"
+
 
 class OSFProtocol(RepositoryProtocol):
     """
@@ -76,8 +78,8 @@ class OSFProtocol(RepositoryProtocol):
 
             return (None)
 
-        abstract = (form.cleaned_data['abstract']
-                    or kill_html(self.paper.abstract))
+        abstract = (form.cleaned_data['abstract'] or
+                    kill_html(self.paper.abstract))
         paper_doi = get_key_data('doi')
 
         def create_tags():
@@ -238,7 +240,7 @@ class OSFProtocol(RepositoryProtocol):
                     }
                 }
 
-            if license_id == "563c1cf88c5e4a3877f9e965":
+            if license_id == NO_LICENSE_ID:
                 license_structure['data']['attributes'] = {
                     "node_license": {
                         "year": pub_date,
@@ -255,7 +257,7 @@ class OSFProtocol(RepositoryProtocol):
                                          headers=headers)
             self.log_request(license_req, 200,
                              __('Unable to update license.'))
-            license_response = license_req.json()
+            # license_response = license_req.json()
 
             # Updating License
             self.log("### Updating License")
