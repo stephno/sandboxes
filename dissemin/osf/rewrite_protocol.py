@@ -142,7 +142,7 @@ class OSFProtocol(RepositoryProtocol):
 
     # Send the min. structure.
     # The response should contain the node ID.
-    def create_node():
+    def create_node(self):
         osf_response = requests.post(self.api_url,
                                      data=json.dumps(min_node_structure),
                                      headers=headers)
@@ -343,7 +343,7 @@ class OSFProtocol(RepositoryProtocol):
             'Content-Type': 'application/vnd.api+json'
         }
 
-        osf_response = create_node()
+        osf_response = self.create_node()
         node_id = osf_response['data']['id']
 
         self.osf_storage_data = get_newnode_osf_storage(node_id)
