@@ -1,3 +1,14 @@
+-------------------
+-- Chapter Codes --
+-------------------
+
+-- Listing 6.2 --
+SELECT employees.first_name,
+       employees.last_name,
+       departments.dept
+FROM employees JOIN departments
+  ON employees.dept_id = departments.dept_id;
+
 ---------------------
 -- Try It Yourself --
 ---------------------
