@@ -64,4 +64,3 @@ FROM ( SELECT c2000.state_us_abbreviation as states,
        GROUP BY c2000.state_us_abbreviation
      ) AS losses
 WHERE losses.pop_2010 < losses.pop_2000;
-
