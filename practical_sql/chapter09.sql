@@ -50,8 +50,11 @@ WHERE meat_processing = TRUE
 --
 /* company                          meat_and_poultry
    -------------------------        ----------------
+   -- snip --
    Ajinomoto Windsor Inc.                          1
    Ajinomoto Windsor, Inc.                         7
+   -- snip --
    AdvancePierre Foods, Inc                        1
    AdvancePierre Foods, Inc.                       6
+   -- snip --
 */
